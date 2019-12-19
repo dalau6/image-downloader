@@ -1,5 +1,7 @@
 import io
+
 from PIL import Image
+from multiprocessing.pool import ThreadPool
 
 def image_downloader(img_url: str):
     """
@@ -30,3 +32,15 @@ def image_downloader(img_url: str):
     download_location = get_download_location()
     i.save(download_location + '/'+image_name)
     return f'Download complete: {img_url}'
+
+
+def run_downloader(process: int, images_url: list):
+    """
+    Inputs:
+        process: (int) number of process to run
+        images_url:(list) list of images url
+    """
+    print(f'MESSAGE: Running {process} process')
+    results = ThreadPool(process).imap_unordered(image_downloader, images_url)
+    for r in results:
+        print(r)
