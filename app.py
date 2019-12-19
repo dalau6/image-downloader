@@ -1,7 +1,39 @@
 import io
+import pathlib
+import random
+import requests
+import shutil
+import sys
+import time
 
-from PIL import Image
 from multiprocessing.pool import ThreadPool
+from PIL import Image
+
+start = time.time()
+
+def get_download_location():
+    try:
+        url_input = sys.argv[1]
+    except IndexError:
+        print('ERROR: Please provide the txt file\n$python image_downloader.py cats.txt')
+    name = url_input.split('.')[0]
+    pathlib.Path(name).mkdir(parents=True, exist_ok=True)
+    return name
+
+def get_urls():
+    """
+    Returns a list of urls by reading the txt file supplied as argument in terminal
+    """
+    try:
+        url_input = sys.argv[1]
+    except IndexError:
+        print('ERROR: Please provide the txt file\n Example \n\n$python image_downloader.py dogs.txt \n\n')
+        sys.exit()
+    with open(url_input, 'r') as f:
+        images_url = f.read().splitlines()
+
+    print('{} Images detected'.format(len(images_url)))
+    return images_url
 
 def image_downloader(img_url: str):
     """
@@ -33,7 +65,6 @@ def image_downloader(img_url: str):
     i.save(download_location + '/'+image_name)
     return f'Download complete: {img_url}'
 
-
 def run_downloader(process: int, images_url: list):
     """
     Inputs:
@@ -44,3 +75,15 @@ def run_downloader(process: int, images_url: list):
     results = ThreadPool(process).imap_unordered(image_downloader, images_url)
     for r in results:
         print(r)
+
+try:
+    num_process = int(sys.argv[2])
+except:
+    num_process = 10
+
+images_url = get_urls()
+run_downloader(num_process, images_url)
+
+end = time.time()
+print('Time taken to download {}'.format(len(get_urls())))
+print(end - start)
